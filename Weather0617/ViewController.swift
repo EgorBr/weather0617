@@ -11,43 +11,63 @@ import Alamofire
 import SwiftyJSON
 import RealmSwift
 
-class ViewController: UIViewController {
-
+class ViewController: UITableViewController {
+    var cityList: [String] = ["Moscow", "London", "Oslo", "Paris"]
+    let manager: ManagerData = ManagerData()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        let realm = try! Realm()
         print(Realm.Configuration.defaultConfiguration.fileURL)
-        let url = "http://api.openweathermap.org/data/2.5/forecast?q=London&appid=cc43de317c7b45042d6dd7d09ee12d74"
-        var cityName: String = ""
         
-        Alamofire.request(url, method: .get).validate().responseJSON { response in
-            
-            switch response.result {
-            case .success(let value):
-                let json = JSON(value)
-                print("JSON: \(json["city"]["name"].stringValue)")
-                let onlineWeather = WeatherData()
-                onlineWeather.city_name = json["city"]["name"].stringValue
-//                print("Name2: \(cityName)")
+        if load == nil {
+            for newCityJSON in cityList {
+                manager.loadJSON(city: newCityJSON)
                 
-               try! realm.write {
-                    realm.add(onlineWeather)
-                }
-                
-            case .failure(let error):
-                print(error)
             }
-            
+        } else {
+            cityList = manager.loadCityListDB()
         }
-        print("Name1: \(cityName)")
+        
+
+        
 
         // Do any additional setup after loading the view, typically from a nib.
     }
+    
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return cityList.count
+    }
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        cell.textLabel?.text = cityList[indexPath.row]
+        return cell
+        
+    }
+    
+    @IBAction func goHome(segue: UIStoryboardSegue) {
+        
+    }
+    
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "details" {
+            if let indexPath = tableView.indexPathForSelectedRow {
+                let destinationVC = segue.destination as! DetailsCollectionViewController
+                destinationVC.city = cityList[indexPath.row]
+            }
+            
+        }
+        
+    }
+    
 
 
 }

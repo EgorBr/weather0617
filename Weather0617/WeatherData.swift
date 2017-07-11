@@ -11,6 +11,9 @@ import RealmSwift
 
 class WeatherData: Object {
     dynamic var city_name: String = ""
+    var tempList = List<Temp>()
     
-    
+    override static func primaryKey() -> String? {
+        return "city_name"
+    }
 }
